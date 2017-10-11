@@ -4,9 +4,7 @@ import {connect} from 'react-redux';
 import bindAll from 'lodash.bindall';
 import Modes from '../modes/modes';
 import {changeStrokeWidth} from '../reducers/stroke-width';
-import {clearSelection, getSelectedLeafItems} from '../helper/selection';
-import {MIXED} from '../helper/style-path';
-import {clearSelectedItems, setSelectedItems} from '../reducers/selected-items';
+import {clearSelection} from '../helper/selection';
 import LineModeComponent from '../components/line-mode.jsx';
 import {changeMode} from '../reducers/modes';
 import paper from 'paper';
@@ -45,7 +43,7 @@ class LineMode extends React.Component {
         return false; // Static component, for now
     }
     activateTool () {
-        clearSelection(this.props.clearSelectedItems);
+        clearSelection();
         this.props.canvas.addEventListener('mousewheel', this.onScroll);
         this.tool = new paper.Tool();
         
@@ -95,12 +93,9 @@ class LineMode extends React.Component {
         if (!this.path) {
             this.path = new paper.Path();
             
-            this.path.setStrokeColor(
-                this.props.colorState.strokeColor === MIXED ? 'black' : this.props.colorState.strokeColor);
+            this.path.setStrokeColor(this.props.colorState.strokeColor);
             // Make sure a visible line is drawn
-            this.path.setStrokeWidth(
-                this.props.colorState.strokeWidth === null || this.props.colorState.strokeWidth === 0 ?
-                    1 : this.props.colorState.strokeWidth);
+            this.path.setStrokeWidth(Math.max(1, this.props.colorState.strokeWidth));
 
             this.path.setSelected(true);
             this.path.add(event.point);
@@ -207,7 +202,6 @@ class LineMode extends React.Component {
             this.hitResult = null;
         }
         this.props.onUpdateSvg();
-        this.props.setSelectedItems();
 
         // TODO add back undo
         // if (this.path) {
@@ -275,16 +269,14 @@ class LineMode extends React.Component {
 LineMode.propTypes = {
     canvas: PropTypes.instanceOf(Element).isRequired,
     changeStrokeWidth: PropTypes.func.isRequired,
-    clearSelectedItems: PropTypes.func.isRequired,
     colorState: PropTypes.shape({
-        fillColor: PropTypes.string,
-        strokeColor: PropTypes.string,
-        strokeWidth: PropTypes.number
+        fillColor: PropTypes.string.isRequired,
+        strokeColor: PropTypes.string.isRequired,
+        strokeWidth: PropTypes.number.isRequired
     }).isRequired,
     handleMouseDown: PropTypes.func.isRequired,
     isLineModeActive: PropTypes.bool.isRequired,
-    onUpdateSvg: PropTypes.func.isRequired,
-    setSelectedItems: PropTypes.func.isRequired
+    onUpdateSvg: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({
@@ -294,12 +286,6 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     changeStrokeWidth: strokeWidth => {
         dispatch(changeStrokeWidth(strokeWidth));
-    },
-    clearSelectedItems: () => {
-        dispatch(clearSelectedItems());
-    },
-    setSelectedItems: () => {
-        dispatch(setSelectedItems(getSelectedLeafItems()));
     },
     handleMouseDown: () => {
         dispatch(changeMode(Modes.LINE));

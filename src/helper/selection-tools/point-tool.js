@@ -1,15 +1,13 @@
 import paper from 'paper';
 import {snapDeltaToAngle} from '../math';
-import {clearSelection, getSelectedLeafItems} from '../selection';
+import {clearSelection, getSelectedItems} from '../selection';
 
 /** Subtool of ReshapeTool for moving control points. */
 class PointTool {
     /**
-     * @param {function} setSelectedItems Callback to set the set of selected items in the Redux state
-     * @param {function} clearSelectedItems Callback to clear the set of selected items in the Redux state
      * @param {!function} onUpdateSvg A callback to call when the image visibly changes
      */
-    constructor (setSelectedItems, clearSelectedItems, onUpdateSvg) {
+    constructor (onUpdateSvg) {
         /**
          * Deselection often does not happen until mouse up. If the mouse is dragged before
          * mouse up, deselection is cancelled. This variable keeps track of which paper.Item to deselect.
@@ -26,8 +24,6 @@ class PointTool {
          */
         this.invertDeselect = false;
         this.selectedItems = null;
-        this.setSelectedItems = setSelectedItems;
-        this.clearSelectedItems = clearSelectedItems;
         this.onUpdateSvg = onUpdateSvg;
     }
 
@@ -53,12 +49,12 @@ class PointTool {
             }
         } else {
             if (!hitProperties.multiselect) {
-                clearSelection(this.clearSelectedItems);
+                clearSelection();
             }
             hitProperties.hitResult.segment.selected = true;
         }
         
-        this.selectedItems = getSelectedLeafItems();
+        this.selectedItems = getSelectedItems(true /* recursive */);
     }
     /**
      * @param {!object} hitProperties Describes the mouse event
@@ -90,7 +86,7 @@ class PointTool {
         hitProperties.hitResult.item.insert(hitProperties.hitResult.location.index + 1, newSegment);
         hitProperties.hitResult.segment = newSegment;
         if (!hitProperties.multiselect) {
-            clearSelection(this.clearSelectedItems);
+            clearSelection();
         }
         newSegment.selected = true;
 
@@ -179,7 +175,7 @@ class PointTool {
         // and delete
         if (this.deselectOnMouseUp) {
             if (this.invertDeselect) {
-                clearSelection(this.clearSelectedItems);
+                clearSelection();
                 this.deselectOnMouseUp.selected = true;
             } else {
                 this.deselectOnMouseUp.selected = false;
@@ -192,7 +188,6 @@ class PointTool {
             this.deleteOnMouseUp = null;
         }
         this.selectedItems = null;
-        this.setSelectedItems();
         // @todo add back undo
         this.onUpdateSvg();
     }

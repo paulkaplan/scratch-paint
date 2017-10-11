@@ -2,7 +2,7 @@ import paper from 'paper';
 import log from '../../log/log';
 import BroadBrushHelper from './broad-brush-helper';
 import SegmentBrushHelper from './segment-brush-helper';
-import {MIXED, styleCursorPreview} from '../../helper/style-path';
+import {styleCursorPreview} from './style-path';
 import {clearSelection} from '../../helper/selection';
 
 /**
@@ -27,18 +27,11 @@ class Blobbiness {
 
     /**
      * @param {function} updateCallback call when the drawing has changed to let listeners know
-     * @param {function} clearSelectedItems Callback to clear the set of selected items in the Redux state
      */
-    constructor (updateCallback, clearSelectedItems) {
+    constructor (updateCallback) {
         this.broadBrushHelper = new BroadBrushHelper();
         this.segmentBrushHelper = new SegmentBrushHelper();
         this.updateCallback = updateCallback;
-        this.clearSelectedItems = clearSelectedItems;
-
-        // The following are stored to check whether these have changed and the cursor preview needs to be redrawn.
-        this.strokeColor = null;
-        this.brushSize = null;
-        this.fillColor = null;
     }
     
     /**
@@ -52,18 +45,7 @@ class Blobbiness {
      * @param {?number} options.strokeWidth Width of the brush outline.
      */
     setOptions (options) {
-        const oldFillColor = this.options ? this.options.fillColor : 'black';
-        const oldStrokeColor = this.options ? this.options.strokeColor : null;
-        const oldStrokeWidth = this.options ? this.options.strokeWidth : null;
-        // If values are mixed, it means the color was set by a selection contained multiple values.
-        // In this case keep drawing with the previous values if any. (For stroke width, null indicates
-        // mixed, because stroke width is required to be a number)
-        this.options = {
-            ...options,
-            fillColor: options.fillColor === MIXED ? oldFillColor : options.fillColor,
-            strokeColor: options.strokeColor === MIXED ? oldStrokeColor : options.strokeColor,
-            strokeWidth: options.strokeWidth === null ? oldStrokeWidth : options.strokeWidth
-        };
+        this.options = options;
         this.resizeCursorIfNeeded();
     }
 
@@ -251,7 +233,7 @@ class Blobbiness {
         // Eraser didn't hit anything selected, so assume they meant to erase from all instead of from subset
         // and deselect the selection
         if (items.length === 0) {
-            clearSelection(this.clearSelectedItems);
+            clearSelection();
             items = paper.project.getItems({
                 match: function (item) {
                     return blob.isMergeable(lastPath, item) && blob.touches(lastPath, item);

@@ -1,16 +1,12 @@
-import {clearSelection, getSelectedLeafItems} from '../selection';
+import {clearSelection, getSelectedItems} from '../selection';
 
 /** Sub tool of the Reshape tool for moving handles, which adjust bezier curves. */
 class HandleTool {
     /**
-     * @param {function} setSelectedItems Callback to set the set of selected items in the Redux state
-     * @param {function} clearSelectedItems Callback to clear the set of selected items in the Redux state
      * @param {!function} onUpdateSvg A callback to call when the image visibly changes
      */
-    constructor (setSelectedItems, clearSelectedItems, onUpdateSvg) {
+    constructor (onUpdateSvg) {
         this.hitType = null;
-        this.setSelectedItems = setSelectedItems;
-        this.clearSelectedItems = clearSelectedItems;
         this.onUpdateSvg = onUpdateSvg;
     }
     /**
@@ -20,7 +16,7 @@ class HandleTool {
      */
     onMouseDown (hitProperties) {
         if (!hitProperties.multiselect) {
-            clearSelection(this.clearSelectedItems);
+            clearSelection();
         }
         
         hitProperties.hitResult.segment.handleIn.selected = true;
@@ -28,7 +24,7 @@ class HandleTool {
         this.hitType = hitProperties.hitResult.type;
     }
     onMouseDrag (event) {
-        const selectedItems = getSelectedLeafItems();
+        const selectedItems = getSelectedItems(true /* recursive */);
         
         for (const item of selectedItems) {
             for (const seg of item.segments) {

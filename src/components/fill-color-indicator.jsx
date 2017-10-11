@@ -6,8 +6,6 @@ import BufferedInputHOC from './forms/buffered-input-hoc.jsx';
 import Label from './forms/label.jsx';
 import Input from './forms/input.jsx';
 
-import {MIXED} from '../helper/style-path';
-
 import styles from './paint-editor.css';
 
 const BufferedInput = BufferedInputHOC(Input);
@@ -23,8 +21,7 @@ const FillColorIndicatorComponent = props => (
         <Label text={props.intl.formatMessage(messages.fill)}>
             <BufferedInput
                 type="text"
-                value={props.fillColor === MIXED ? 'mixed' :
-                    props.fillColor === null ? 'transparent' : props.fillColor} // @todo Don't use text
+                value={props.fillColor}
                 onSubmit={props.onChangeFillColor}
             />
         </Label>
@@ -32,7 +29,7 @@ const FillColorIndicatorComponent = props => (
 );
 
 FillColorIndicatorComponent.propTypes = {
-    fillColor: PropTypes.string,
+    fillColor: PropTypes.string.isRequired,
     intl: intlShape,
     onChangeFillColor: PropTypes.func.isRequired
 };

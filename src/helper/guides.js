@@ -1,6 +1,6 @@
 import paper from 'paper';
 import {getGuideLayer} from './layer';
-import {getAllRootItems} from './selection';
+import {getAllPaperItems} from './selection';
 
 const GUIDE_BLUE = '#009dec';
 const GUIDE_GREY = '#aaaaaa';
@@ -66,7 +66,7 @@ const getGuideColor = function (colorName) {
 };
 
 const _removePaperItemsByDataTags = function (tags) {
-    const allItems = getAllRootItems(true);
+    const allItems = getAllPaperItems(true);
     for (const item of allItems) {
         for (const tag of tags) {
             if (item.data && item.data[tag]) {
@@ -77,7 +77,7 @@ const _removePaperItemsByDataTags = function (tags) {
 };
 
 const _removePaperItemsByTags = function (tags) {
-    const allItems = getAllRootItems(true);
+    const allItems = getAllPaperItems(true);
     for (const item of allItems) {
         for (const tag of tags) {
             if (item[tag]) {

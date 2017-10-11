@@ -5,9 +5,7 @@ import bindAll from 'lodash.bindall';
 import Modes from '../modes/modes';
 
 import {changeMode} from '../reducers/modes';
-import {clearHoveredItem, setHoveredItem} from '../reducers/hover';
-import {clearSelectedItems, setSelectedItems} from '../reducers/selected-items';
-import {getSelectedLeafItems} from '../helper/selection';
+import {setHoveredItem, clearHoveredItem} from '../reducers/hover';
 
 import ReshapeTool from '../helper/selection-tools/reshape-tool';
 import ReshapeModeComponent from '../components/reshape-mode.jsx';
@@ -40,12 +38,7 @@ class ReshapeMode extends React.Component {
         return false; // Static component, for now
     }
     activateTool () {
-        this.tool = new ReshapeTool(
-            this.props.setHoveredItem,
-            this.props.clearHoveredItem,
-            this.props.setSelectedItems,
-            this.props.clearSelectedItems,
-            this.props.onUpdateSvg);
+        this.tool = new ReshapeTool(this.props.setHoveredItem, this.props.clearHoveredItem, this.props.onUpdateSvg);
         this.tool.setPrevHoveredItemId(this.props.hoveredItemId);
         this.tool.activate();
     }
@@ -64,13 +57,11 @@ class ReshapeMode extends React.Component {
 
 ReshapeMode.propTypes = {
     clearHoveredItem: PropTypes.func.isRequired,
-    clearSelectedItems: PropTypes.func.isRequired,
     handleMouseDown: PropTypes.func.isRequired,
     hoveredItemId: PropTypes.number,
     isReshapeModeActive: PropTypes.bool.isRequired,
     onUpdateSvg: PropTypes.func.isRequired,
-    setHoveredItem: PropTypes.func.isRequired,
-    setSelectedItems: PropTypes.func.isRequired
+    setHoveredItem: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({
@@ -83,12 +74,6 @@ const mapDispatchToProps = dispatch => ({
     },
     clearHoveredItem: () => {
         dispatch(clearHoveredItem());
-    },
-    clearSelectedItems: () => {
-        dispatch(clearSelectedItems());
-    },
-    setSelectedItems: () => {
-        dispatch(setSelectedItems(getSelectedLeafItems()));
     },
     handleMouseDown: () => {
         dispatch(changeMode(Modes.RESHAPE));

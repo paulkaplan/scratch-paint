@@ -10,7 +10,7 @@ import {getItemsCompoundPath, isCompoundPath, isCompoundPathChild} from './compo
  *     be included in the returned items.
  * @return {Array<paper.item>} all top-level (direct descendants of a paper.Layer) items
  */
-const getAllRootItems = function (includeGuides) {
+const getAllPaperItems = function (includeGuides) {
     includeGuides = includeGuides || false;
     const allItems = [];
     for (const layer of paper.project.layers) {
@@ -29,8 +29,8 @@ const getAllRootItems = function (includeGuides) {
  * @return {Array<paper.item>} all top-level (direct descendants of a paper.Layer) items
  *     that aren't guide items or helper items.
  */
-const getAllSelectableRootItems = function () {
-    const allItems = getAllRootItems();
+const getAllSelectableItems = function () {
+    const allItems = getAllPaperItems();
     const selectables = [];
     for (let i = 0; i < allItems.length; i++) {
         if (allItems[i].data && !allItems[i].data.isHelperItem) {
@@ -97,7 +97,7 @@ const setItemSelection = function (item, state, fullySelected) {
 };
 
 const selectAllItems = function () {
-    const items = getAllSelectableRootItems();
+    const items = getAllSelectableItems();
     
     for (let i = 0; i < items.length; i++) {
         setItemSelection(items[i], true);
@@ -105,67 +105,51 @@ const selectAllItems = function () {
 };
 
 const selectAllSegments = function () {
-    const items = getAllSelectableRootItems();
+    const items = getAllSelectableItems();
     
     for (let i = 0; i < items.length; i++) {
         selectItemSegments(items[i], true);
     }
 };
 
-/** @param {!function} dispatchClearSelect Function to update the Redux select state */
-const clearSelection = function (dispatchClearSelect) {
+const clearSelection = function () {
     paper.project.deselectAll();
     // @todo: Update toolbar state on change
-    dispatchClearSelect();
 };
 
-/**
- * This gets all selected non-grouped items and groups
- * (alternative to paper.project.selectedItems, which includes
- * group children in addition to the group)
- * @return {Array<paper.Item>} in increasing Z order.
- */
-const getSelectedRootItems = function () {
+// This gets all selected non-grouped items and groups
+// (alternative to paper.project.selectedItems, which includes
+// group children in addition to the group)
+// Returns in increasing Z order
+const getSelectedItems = function (recursive) {
     const allItems = paper.project.selectedItems;
     const itemsAndGroups = [];
 
-    for (let i = 0; i < allItems.length; i++) {
-        const item = allItems[i];
-        if ((isGroup(item) && !isGroup(item.parent)) ||
-                !isGroup(item.parent)) {
+    if (recursive) {
+        for (let i = 0; i < allItems.length; i++) {
+            const item = allItems[i];
             if (item.data && !item.data.isSelectionBound) {
                 itemsAndGroups.push(item);
             }
         }
+    } else {
+        for (let i = 0; i < allItems.length; i++) {
+            const item = allItems[i];
+            if ((isGroup(item) && !isGroup(item.parent)) ||
+                    !isGroup(item.parent)) {
+                if (item.data && !item.data.isSelectionBound) {
+                    itemsAndGroups.push(item);
+                }
+            }
+        }
     }
-
     // sort items by index (0 at bottom)
     itemsAndGroups.sort((a, b) => parseFloat(a.index) - parseFloat(b.index));
     return itemsAndGroups;
 };
 
-/**
- * This gets all selected items that are as deeply nested as possible. Does not
- * return the parent groups.
- * @return {Array<paper.Item>} in increasing Z order.
- */
-const getSelectedLeafItems = function () {
-    const allItems = paper.project.selectedItems;
-    const items = [];
-
-    for (let i = 0; i < allItems.length; i++) {
-        const item = allItems[i];
-        if (!isGroup(item) && item.data && !item.data.isSelectionBound) {
-            items.push(item);
-        }
-    }
-
-    // sort items by index (0 at bottom)
-    items.sort((a, b) => parseFloat(a.index) - parseFloat(b.index));
-    return items;
-};
-
-const deleteItemSelection = function (items) {
+const deleteItemSelection = function (recursive) {
+    const items = getSelectedItems(recursive);
     for (let i = 0; i < items.length; i++) {
         items[i].remove();
     }
@@ -176,10 +160,11 @@ const deleteItemSelection = function (items) {
     // pg.undo.snapshot('deleteItemSelection');
 };
 
-const removeSelectedSegments = function (items) {
+const removeSelectedSegments = function (recursive) {
     // @todo add back undo
     // pg.undo.snapshot('removeSelectedSegments');
     
+    const items = getSelectedItems(recursive);
     const segmentsToRemove = [];
     
     for (let i = 0; i < items.length; i++) {
@@ -203,14 +188,12 @@ const removeSelectedSegments = function (items) {
 
 const deleteSelection = function (mode) {
     if (mode === Modes.RESHAPE) {
-        const selectedItems = getSelectedLeafItems();
         // If there are points selected remove them. If not delete the item selected.
-        if (!removeSelectedSegments(selectedItems)) {
-            deleteItemSelection(selectedItems);
+        if (!removeSelectedSegments(true /* recursive */)) {
+            deleteItemSelection(true /* recursive */);
         }
     } else {
-        const selectedItems = getSelectedRootItems();
-        deleteItemSelection(selectedItems);
+        deleteItemSelection();
     }
 };
 
@@ -260,7 +243,7 @@ const splitPathRetainSelection = function (path, index, deselectSplitSegments) {
 };
 
 const splitPathAtSelectedSegments = function () {
-    const items = getSelectedRootItems();
+    const items = getSelectedItems();
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
         const segments = item.segments;
@@ -316,7 +299,9 @@ const deleteSegments = function (item) {
     }
 };
 
-const deleteSegmentSelection = function (items) {
+const deleteSegmentSelection = function () {
+    
+    const items = getSelectedItems();
     for (let i = 0; i < items.length; i++) {
         deleteSegments(items[i]);
     }
@@ -328,7 +313,7 @@ const deleteSegmentSelection = function (items) {
 };
 
 const cloneSelection = function (recursive) {
-    const selectedItems = recursive ? getSelectedLeafItems() : getSelectedRootItems();
+    const selectedItems = getSelectedItems(recursive);
     for (let i = 0; i < selectedItems.length; i++) {
         const item = selectedItems[i];
         item.clone();
@@ -340,7 +325,7 @@ const cloneSelection = function (recursive) {
 
 // Only returns paths, no compound paths, groups or any other stuff
 const getSelectedPaths = function () {
-    const allPaths = getSelectedRootItems();
+    const allPaths = getSelectedItems();
     const paths = [];
 
     for (let i = 0; i < allPaths.length; i++) {
@@ -471,7 +456,7 @@ const _rectangularSelectionGroupLoop = function (group, rect, root, event, mode)
  * @param {Modes} mode The mode of the paint editor when drawing the rectangle
  */
 const processRectangularSelection = function (event, rect, mode) {
-    const allItems = getAllSelectableRootItems();
+    const allItems = getAllSelectableItems();
     
     for (let i = 0; i < allItems.length; i++) {
         const item = allItems[i];
@@ -493,7 +478,7 @@ const processRectangularSelection = function (event, rect, mode) {
  * instead. (otherwise the compound path breaks because of scale-grouping)
  */
 const selectRootItem = function () {
-    const items = getSelectedLeafItems();
+    const items = getSelectedItems(true /* recursive */);
     for (const item of items) {
         if (isCompoundPathChild(item)) {
             const cp = getItemsCompoundPath(item);
@@ -507,11 +492,11 @@ const selectRootItem = function () {
 };
 
 const shouldShowIfSelection = function () {
-    return getSelectedRootItems().length > 0;
+    return getSelectedItems().length > 0;
 };
 
 const shouldShowIfSelectionRecursive = function () {
-    return getSelectedRootItems().length > 0;
+    return getSelectedItems(true /* recursive */).length > 0;
 };
 
 const shouldShowSelectAll = function () {
@@ -519,7 +504,7 @@ const shouldShowSelectAll = function () {
 };
 
 export {
-    getAllRootItems,
+    getAllPaperItems,
     selectAllItems,
     selectAllSegments,
     clearSelection,
@@ -530,9 +515,8 @@ export {
     cloneSelection,
     setItemSelection,
     setGroupSelection,
-    getSelectedLeafItems,
+    getSelectedItems,
     getSelectedPaths,
-    getSelectedRootItems,
     removeSelectedSegments,
     processRectangularSelection,
     selectRootItem,

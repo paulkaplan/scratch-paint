@@ -1,7 +1,7 @@
 import paper from 'paper';
 import keyMirror from 'keymirror';
 
-import {getSelectedRootItems} from '../selection';
+import {clearSelection, getSelectedItems} from '../selection';
 import {getGuideColor, removeHelperItems} from '../guides';
 import {getGuideLayer} from '../layer';
 
@@ -31,12 +31,7 @@ const Modes = keyMirror({
  * @param {!function} onUpdateSvg A callback to call when the image visibly changes
  */
 class BoundingBoxTool {
-    /**
-     * @param {function} setSelectedItems Callback to set the set of selected items in the Redux state
-     * @param {function} clearSelectedItems Callback to clear the set of selected items in the Redux state
-     * @param {!function} onUpdateSvg A callback to call when the image visibly changes
-     */
-    constructor (setSelectedItems, clearSelectedItems, onUpdateSvg) {
+    constructor (onUpdateSvg) {
         this.onUpdateSvg = onUpdateSvg;
         this.mode = null;
         this.boundsPath = null;
@@ -45,7 +40,7 @@ class BoundingBoxTool {
         this._modeMap = {};
         this._modeMap[Modes.SCALE] = new ScaleTool(onUpdateSvg);
         this._modeMap[Modes.ROTATE] = new RotateTool(onUpdateSvg);
-        this._modeMap[Modes.MOVE] = new MoveTool(setSelectedItems, clearSelectedItems, onUpdateSvg);
+        this._modeMap[Modes.MOVE] = new MoveTool(onUpdateSvg);
     }
 
     /**
@@ -61,6 +56,7 @@ class BoundingBoxTool {
         if (!hitResults || hitResults.length === 0) {
             if (!multiselect) {
                 this.removeBoundsPath();
+                clearSelection();
             }
             return false;
         }
@@ -90,9 +86,9 @@ class BoundingBoxTool {
             this._modeMap[this.mode].onMouseDown(hitProperties);
         } else if (this.mode === Modes.SCALE) {
             this._modeMap[this.mode].onMouseDown(
-                hitResult, this.boundsPath, this.boundsScaleHandles, this.boundsRotHandles, getSelectedRootItems());
+                hitResult, this.boundsPath, this.boundsScaleHandles, this.boundsRotHandles, getSelectedItems());
         } else if (this.mode === Modes.ROTATE) {
-            this._modeMap[this.mode].onMouseDown(hitResult, this.boundsPath, getSelectedRootItems());
+            this._modeMap[this.mode].onMouseDown(hitResult, this.boundsPath, getSelectedItems());
         }
 
         // while transforming object, never show the bounds stuff
@@ -113,7 +109,7 @@ class BoundingBoxTool {
     setSelectionBounds () {
         this.removeBoundsPath();
         
-        const items = getSelectedRootItems();
+        const items = getSelectedItems(true /* recursive */);
         if (items.length <= 0) return;
         
         let rect = null;

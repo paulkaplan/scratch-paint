@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 import BufferedInputHOC from './forms/buffered-input-hoc.jsx';
 import Input from './forms/input.jsx';
-
 import {MAX_STROKE_WIDTH} from '../reducers/stroke-width';
 
 import styles from './paint-editor.css';
@@ -16,7 +15,7 @@ const StrokeWidthIndicatorComponent = props => (
             max={MAX_STROKE_WIDTH}
             min="0"
             type="number"
-            value={props.strokeWidth ? props.strokeWidth : 0}
+            value={props.strokeWidth}
             onSubmit={props.onChangeStrokeWidth}
         />
     </div>
@@ -24,7 +23,7 @@ const StrokeWidthIndicatorComponent = props => (
 
 StrokeWidthIndicatorComponent.propTypes = {
     onChangeStrokeWidth: PropTypes.func.isRequired,
-    strokeWidth: PropTypes.number
+    strokeWidth: PropTypes.number.isRequired
 };
 
 export default StrokeWidthIndicatorComponent;

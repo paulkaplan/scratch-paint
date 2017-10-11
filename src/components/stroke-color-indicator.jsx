@@ -6,8 +6,6 @@ import BufferedInputHOC from './forms/buffered-input-hoc.jsx';
 import Label from './forms/label.jsx';
 import Input from './forms/input.jsx';
 
-import {MIXED} from '../helper/style-path';
-
 import styles from './paint-editor.css';
 
 const BufferedInput = BufferedInputHOC(Input);
@@ -23,9 +21,7 @@ const StrokeColorIndicatorComponent = props => (
         <Label text={props.intl.formatMessage(messages.stroke)}>
             <BufferedInput
                 type="text"
-                // @todo Don't use text
-                value={props.strokeColor === MIXED ? 'mixed' :
-                    props.strokeColor === null ? 'transparent' : props.strokeColor}
+                value={props.strokeColor}
                 onSubmit={props.onChangeStrokeColor}
             />
         </Label>
@@ -35,7 +31,7 @@ const StrokeColorIndicatorComponent = props => (
 StrokeColorIndicatorComponent.propTypes = {
     intl: intlShape,
     onChangeStrokeColor: PropTypes.func.isRequired,
-    strokeColor: PropTypes.string
+    strokeColor: PropTypes.string.isRequired
 };
 
 export default injectIntl(StrokeColorIndicatorComponent);

@@ -6,7 +6,6 @@ import Modes from '../modes/modes';
 import Blobbiness from './blob/blob';
 import {changeBrushSize} from '../reducers/brush-mode';
 import {changeMode} from '../reducers/modes';
-import {clearSelectedItems} from '../reducers/selected-items';
 import {clearSelection} from '../helper/selection';
 import BrushModeComponent from '../components/brush-mode.jsx';
 
@@ -18,7 +17,7 @@ class BrushMode extends React.Component {
             'deactivateTool',
             'onScroll'
         ]);
-        this.blob = new Blobbiness(this.props.onUpdateSvg, this.props.clearSelectedItems);
+        this.blob = new Blobbiness(this.props.onUpdateSvg);
     }
     componentDidMount () {
         if (this.props.isBrushModeActive) {
@@ -44,7 +43,7 @@ class BrushMode extends React.Component {
     activateTool () {
         // TODO: Instead of clearing selection, consider a kind of "draw inside"
         // analogous to how selection works with eraser
-        clearSelection(this.props.clearSelectedItems);
+        clearSelection();
 
         // TODO: This is temporary until a component that provides the brush size is hooked up
         this.props.canvas.addEventListener('mousewheel', this.onScroll);
@@ -79,11 +78,10 @@ BrushMode.propTypes = {
     }),
     canvas: PropTypes.instanceOf(Element).isRequired,
     changeBrushSize: PropTypes.func.isRequired,
-    clearSelectedItems: PropTypes.func.isRequired,
     colorState: PropTypes.shape({
-        fillColor: PropTypes.string,
-        strokeColor: PropTypes.string,
-        strokeWidth: PropTypes.number
+        fillColor: PropTypes.string.isRequired,
+        strokeColor: PropTypes.string.isRequired,
+        strokeWidth: PropTypes.number.isRequired
     }).isRequired,
     handleMouseDown: PropTypes.func.isRequired,
     isBrushModeActive: PropTypes.bool.isRequired,
@@ -96,9 +94,6 @@ const mapStateToProps = state => ({
     isBrushModeActive: state.scratchPaint.mode === Modes.BRUSH
 });
 const mapDispatchToProps = dispatch => ({
-    clearSelectedItems: () => {
-        dispatch(clearSelectedItems());
-    },
     changeBrushSize: brushSize => {
         dispatch(changeBrushSize(brushSize));
     },
