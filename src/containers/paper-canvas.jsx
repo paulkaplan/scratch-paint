@@ -135,8 +135,18 @@ class PaperCanvas extends React.Component {
             );
             zoomOnFixedPoint(-event.deltaY / 100, fixedPoint);
         } else {
-            const dx = event.deltaX / paper.project.view.zoom;
-            const dy = event.deltaY / paper.project.view.zoom;
+            let deltaX = event.deltaX;
+            let deltaY = event.deltaY;
+            if (event.shiftKey) {
+                // Horizontal scroll: Some browsers swap deltaX and deltaY on shift,
+                // so make sure to check for deltaY and no deltaX before swapping.
+                if (event.deltaY && !event.deltaX) {
+                    deltaX = event.deltaY; // NB X and Y are swapped
+                    deltaY = event.deltaX;
+                }
+            }
+            const dx = deltaX / paper.project.view.zoom;
+            const dy = deltaY / paper.project.view.zoom;
             pan(dx, dy);
         }
         event.preventDefault();
