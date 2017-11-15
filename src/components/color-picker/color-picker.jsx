@@ -28,6 +28,13 @@ const hsvToHex = (h, s, v) =>
     parseColor(`hsv(${3.6 * h}, ${s}, ${v})`).hex
 ;
 
+const colorsMatch = (hsv, colorString) => {
+    const [hue, saturation, brightness] = colorStringToHsv(colorString);
+    return hsv.hue === hue &&
+        hsv.saturation === saturation &&
+        hsv.brightness === brightness;
+}
+
 // Important! This component ignores new color props and cannot be updated
 // This is to make the HSV <=> RGB conversion stable. Because of this, the
 // component MUST be unmounted in order to change the props externally.
@@ -80,7 +87,15 @@ class ColorPickerComponent extends React.Component {
     }
 
     handleTransparent () {
+        this.setState({hue: 50, saturation: 100, brightness: 100});
         this.props.onChangeColor(null);
+    }
+
+    handleSwatch (color) {
+        const hsv = colorStringToHsv(color);
+        this.setState({hue: hsv[0], saturation: hsv[1], brightness: hsv[2]}, () => {
+            this.handleColorChange();
+        });
     }
 
     _makeBackground (channel) {
@@ -106,6 +121,9 @@ class ColorPickerComponent extends React.Component {
     }
 
     render () {
+        const swatchClickFactory = (color) => {
+            return () => this.handleSwatch(color);
+        }
         return (
             <div className={styles.colorPickerContainer}>
                 <div className={styles.row}>
@@ -183,6 +201,18 @@ class ColorPickerComponent extends React.Component {
                         >
                             <img src={noFillIcon} />
                         </div>
+                        {this.props.colors.map((color) => (
+                            <div
+                                className={classNames({
+                                    [styles.swatch]: true,
+                                    [styles.activeSwatch]: colorsMatch(this.state, color)
+                                })}
+                                style={{
+                                    backgroundColor: parseColor(color).hex
+                                }}
+                                onClick={swatchClickFactory(color)}
+                            />
+                        ))}
                     </div>
                 </div>
             </div>

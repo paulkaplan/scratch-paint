@@ -1,5 +1,6 @@
 import paper from '@scratch/paper';
-import {getSelectedLeafItems} from './selection';
+import parseColor from 'parse-color';
+import {getItems, getSelectedLeafItems} from './selection';
 import {isPGTextItem, isPointTextItem} from './item';
 import {isGroup} from './group';
 
@@ -244,11 +245,32 @@ const styleShape = function (path, options) {
     path.strokeWidth = options.strokeWidth;
 };
 
+const getAllColors = function () {
+    const checkForColor = (arr, color) => {
+        for (const testColor of arr) {
+            if (parseColor(testColor).hsv.toString() === parseColor(color).hsv.toString()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    return getItems({}).reduce((a, p) => {
+        if (p.fillColor && !checkForColor(a, p.fillColor.toCSS())) {
+            a.push(p.fillColor.toCSS());
+        }
+        if (p.strokeColor &&  !checkForColor(a, p.strokeColor.toCSS())) {
+            a.push(p.strokeColor.toCSS());
+        }
+        return a
+    }, []);
+};
+
 export {
     applyFillColorToSelection,
     applyStrokeColorToSelection,
     applyStrokeWidthToSelection,
     getColorsFromSelection,
+    getAllColors,
     MIXED,
     styleBlob,
     styleShape,

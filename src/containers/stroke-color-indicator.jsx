@@ -7,7 +7,7 @@ import {openStrokeColor, closeStrokeColor} from '../reducers/modals';
 import Modes from '../modes/modes';
 
 import StrokeColorIndicatorComponent from '../components/stroke-color-indicator.jsx';
-import {applyStrokeColorToSelection} from '../helper/style-path';
+import {applyStrokeColorToSelection, getAllColors} from '../helper/style-path';
 
 class StrokeColorIndicator extends React.Component {
     constructor (props) {
@@ -37,6 +37,7 @@ class StrokeColorIndicator extends React.Component {
         return (
             <StrokeColorIndicatorComponent
                 {...this.props}
+                colors={getAllColors()}
                 onChangeStrokeColor={this.handleChangeStrokeColor}
             />
         );

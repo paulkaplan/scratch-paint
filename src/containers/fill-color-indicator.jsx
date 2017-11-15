@@ -7,7 +7,7 @@ import {openFillColor, closeFillColor} from '../reducers/modals';
 import Modes from '../modes/modes';
 
 import FillColorIndicatorComponent from '../components/fill-color-indicator.jsx';
-import {applyFillColorToSelection} from '../helper/style-path';
+import {applyFillColorToSelection, getAllColors} from '../helper/style-path';
 
 class FillColorIndicator extends React.Component {
     constructor (props) {
@@ -37,6 +37,7 @@ class FillColorIndicator extends React.Component {
         return (
             <FillColorIndicatorComponent
                 {...this.props}
+                colors={getAllColors()}
                 onChangeFillColor={this.handleChangeFillColor}
             />
         );

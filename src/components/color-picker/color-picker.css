@@ -34,14 +34,18 @@
 }
 
 .swatches {
-    margin: 8px;
+    margin: 6px;
+    display: flex;
+    max-width: 150px;
+    flex-wrap: wrap;
 }
 
 .swatch {
-    width: 1rem;
-    height: 1rem;
+    width: 1.5rem;
+    height: 1.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
+    margin: 2px;
 }
 
 .active-swatch {
@@ -50,5 +54,5 @@
 }
 
 .swatch > img {
-    max-width: 100%;
+    width: 100%;
 }

@@ -22,6 +22,7 @@ const StrokeColorIndicatorComponent = props => (
             body={
                 <ColorPicker
                     color={props.strokeColor}
+                    colors={props.colors}
                     onChangeColor={props.onChangeStrokeColor}
                 />
             }

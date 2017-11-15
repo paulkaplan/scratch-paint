@@ -22,6 +22,7 @@ const FillColorIndicatorComponent = props => (
             body={
                 <ColorPicker
                     color={props.fillColor}
+                    colors={props.colors}
                     onChangeColor={props.onChangeFillColor}
                 />
             }
